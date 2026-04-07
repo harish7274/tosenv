@@ -1,0 +1,16 @@
+# Core server dependencies
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+
+# HTTP client (for client.py and inference.py)
+requests>=2.31.0
+
+# OpenAI client (for inference.py)
+openai>=1.0.0
+
+# YAML parsing
+pyyaml>=6.0
+
+# Used by inference.py
+httpx>=0.25.0

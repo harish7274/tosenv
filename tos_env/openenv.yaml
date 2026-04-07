@@ -1,0 +1,89 @@
+name: tos-risk-analyzer
+version: "1.0.0"
+description: >
+  An OpenEnv environment for training and evaluating AI agents on legal
+  document risk assessment.  An agent reads Terms of Service clauses or
+  full documents and must identify, classify, and score risky provisions
+  — a task humans actually perform daily but that remains unsolved by
+  general-purpose AI agents.
+
+author: "ToS Risk Analyzer Team"
+license: "MIT"
+
+# ── Deployment ──────────────────────────────────────────────────────────────
+server:
+  port: 8000
+  host: "0.0.0.0"
+  startup_command: "uvicorn server.app:app --host 0.0.0.0 --port 8000"
+
+# ── OpenEnv Spec Compliance ─────────────────────────────────────────────────
+api:
+  reset:  "POST /reset"
+  step:   "POST /step"
+  state:  "GET  /state"
+  health: "GET  /health"
+
+# ── Tasks ───────────────────────────────────────────────────────────────────
+tasks:
+  - name: binary_risk
+    difficulty: easy
+    max_steps: 1
+    description: >
+      Given a single Terms of Service clause, determine whether
+      it is 'risky' or 'safe' for users.  Scored 0.0 or 1.0.
+
+  - name: category_classification
+    difficulty: medium
+    max_steps: 1
+    description: >
+      Given a risky clause, classify it into one of five categories:
+      Privacy, Liability, Termination, Payments, Changes.
+      Partial credit is awarded for adjacent categories and good reasoning.
+      Score range: 0.0 – 1.0.
+
+  - name: full_audit
+    difficulty: hard
+    max_steps: 3
+    description: >
+      Given a full Terms of Service document (10+ clauses), identify
+      ALL risky clauses with their categories and risk scores (1-10).
+      Scored via F1 + category accuracy + risk score accuracy.
+      Score range: 0.0 – 1.0.
+
+# ── Action / Observation Spaces ─────────────────────────────────────────────
+observation_space:
+  type: object
+  fields:
+    document_text:    string   # ToS clause or full document
+    task_name:        string   # active task identifier
+    task_description: string   # human-readable task instructions
+    step_number:      integer  # current step in episode
+    max_steps:        integer  # episode step limit
+    metadata:         object   # clause_id, document_id, difficulty hints
+    last_action_error: string | null
+
+action_space:
+  type: object
+  fields:
+    verdict:   "risky | safe (Task 1)"
+    category:  "Privacy | Liability | Termination | Payments | Changes | Other (Task 2)"
+    reasoning: "string explanation (optional bonus, Task 2)"
+    findings:  "list of {clause_text, category, risk_score} objects (Task 3)"
+
+# ── Reward ───────────────────────────────────────────────────────────────────
+reward:
+  range: [0.0, 1.0]
+  signals:
+    - "Task 1: binary 0.0/1.0 on verdict correctness"
+    - "Task 2: 0.85 for exact category + up to 0.15 reasoning bonus"
+    - "Task 3: 0.60 * F1 + 0.25 * category_accuracy + 0.15 * risk_score_accuracy"
+    - "Task 3: per-step partial reward for improvement over previous best"
+
+# ── Tags (for Hugging Face Space discovery) ─────────────────────────────────
+tags:
+  - openenv
+  - legal-ai
+  - RL
+  - reinforcement-learning
+  - document-analysis
+  - NLP
