@@ -35,9 +35,10 @@ from openai import OpenAI
 # Configuration
 # ---------------------------------------------------------------------------
 
-HF_TOKEN     = os.getenv("HF_TOKEN") or os.getenv("API_KEY") or ""
+HF_TOKEN     = os.getenv("HF_TOKEN")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
 MODEL_NAME   = os.getenv("MODEL_NAME",   "Qwen/Qwen2.5-72B-Instruct")
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 ENV_BASE_URL = os.getenv("ENV_BASE_URL", "http://localhost:8000")
 MAX_STEPS    = int(os.getenv("MAX_STEPS", "3"))
 BENCHMARK    = "tos-risk-analyzer"
@@ -49,7 +50,7 @@ TASKS = ["binary_risk", "category_classification", "full_audit"]
 # ---------------------------------------------------------------------------
 
 client = OpenAI(
-    api_key=HF_TOKEN or "hf_placeholder",
+    api_key=HF_TOKEN,
     base_url=API_BASE_URL,
 )
 
@@ -326,6 +327,10 @@ def run_episode(task_name: str, seed: int = 42) -> float:
 # ---------------------------------------------------------------------------
 
 def main():
+    if not HF_TOKEN:
+        print("ERROR: HF_TOKEN is required", file=sys.stderr)
+        sys.exit(1)
+
     # Check server is up
     try:
         resp = _SESSION.get(f"{ENV_BASE_URL}/health", timeout=10)
