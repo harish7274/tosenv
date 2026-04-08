@@ -326,13 +326,6 @@ def run_episode(task_name: str, seed: int = 42) -> float:
 # ---------------------------------------------------------------------------
 
 def main():
-    print(f"\n{'=' * 60}", flush=True)
-    print(f"ToS Risk Analyzer — OpenEnv Baseline Inference", flush=True)
-    print(f"Model:    {MODEL_NAME}", flush=True)
-    print(f"Endpoint: {API_BASE_URL}", flush=True)
-    print(f"Env URL:  {ENV_BASE_URL}", flush=True)
-    print(f"{'=' * 60}\n", flush=True)
-
     # Check server is up
     try:
         resp = _SESSION.get(f"{ENV_BASE_URL}/health", timeout=10)
@@ -343,23 +336,10 @@ def main():
         print(f"ERROR: Cannot connect to environment server at {ENV_BASE_URL}: {e}", file=sys.stderr)
         sys.exit(1)
 
-    scores: Dict[str, float] = {}
     for i, task in enumerate(TASKS):
         seed = 42 + i  # Different seed per task for variety
-        print(f"\n--- Running Task: {task} (seed={seed}) ---\n", flush=True)
-        score = run_episode(task_name=task, seed=seed)
-        scores[task] = score
-        print(f"\n> Task '{task}' final score: {score:.4f}\n", flush=True)
+        run_episode(task_name=task, seed=seed)
         time.sleep(1)
-
-    # Summary
-    print(f"\n{'=' * 60}", flush=True)
-    print("BASELINE SCORES:", flush=True)
-    for task, score in scores.items():
-        print(f"  {task:<30} {score:.4f}", flush=True)
-    avg = sum(scores.values()) / len(scores)
-    print(f"  {'AVERAGE':<30} {avg:.4f}", flush=True)
-    print(f"{'=' * 60}\n", flush=True)
 
 
 if __name__ == "__main__":

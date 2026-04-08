@@ -18,7 +18,10 @@ from __future__ import annotations
 import requests
 from typing import Optional
 
-from models import TosAction, TosObservation, TosState, TosStepResult
+try:
+    from .models import TosAction, TosObservation, TosState, TosStepResult
+except ImportError:
+    from models import TosAction, TosObservation, TosState, TosStepResult
 
 
 class TosEnvClient:
