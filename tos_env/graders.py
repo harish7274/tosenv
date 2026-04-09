@@ -34,21 +34,21 @@ def grade_task1_binary_risk(
     Returns (score, feedback_string).
     """
     if not verdict:
-        return 0.0, "No verdict provided. Expected 'risky' or 'safe'."
+        return 0.05, "No verdict provided. Expected 'risky' or 'safe'."
 
     normalised = verdict.strip().lower()
     if normalised not in ("risky", "safe"):
-        return 0.0, f"Invalid verdict '{verdict}'. Must be 'risky' or 'safe'."
+        return 0.05, f"Invalid verdict '{verdict}'. Must be 'risky' or 'safe'."
 
     agent_says_risky = (normalised == "risky")
     correct = (agent_says_risky == ground_truth_is_risky)
 
     if correct:
         label = "risky" if ground_truth_is_risky else "safe"
-        return 1.0, f"Correct! The clause is {label}."
+        return 0.95, f"Correct! The clause is {label}."
     else:
         expected = "risky" if ground_truth_is_risky else "safe"
-        return 0.0, f"Incorrect. The clause is {expected}, but you said '{normalised}'."
+        return 0.05, f"Incorrect. The clause is {expected}, but you said '{normalised}'."
 
 
 # ===========================================================================
@@ -135,7 +135,7 @@ def grade_task2_category(
     Returns (score, breakdown, feedback_string).
     """
     if not category:
-        return 0.0, {"category": 0.0, "reasoning": 0.0}, "No category provided."
+        return 0.01, {"category": 0.0, "reasoning": 0.0}, "No category provided."
 
     normalised = _normalise_category(category)
     breakdown: Dict[str, float] = {}
@@ -162,6 +162,8 @@ def grade_task2_category(
     breakdown["reasoning"] = reasoning_bonus
 
     total = min(1.0, cat_score + reasoning_bonus)
+    # Clamp to strictly within (0, 1) to satisfy validator requirements
+    total = max(0.01, min(0.99, total))
     feedback = (
         f"{cat_feedback} "
         f"Reasoning bonus: {reasoning_bonus:.2f}. "
@@ -307,7 +309,7 @@ def grade_task3_full_audit(
     Returns (total_score, breakdown, feedback).
     """
     if not agent_findings:
-        return 0.0, {"f1": 0.0, "category_accuracy": 0.0, "risk_score_accuracy": 0.0}, \
+        return 0.05, {"f1": 0.0, "category_accuracy": 0.0, "risk_score_accuracy": 0.0}, \
                "No findings provided."
 
     tp, fp, fn = _match_findings_to_ground_truth(agent_findings, gt_clauses, full_corpus)
@@ -319,7 +321,10 @@ def grade_task3_full_audit(
     cat_acc   = _category_accuracy(agent_findings, gt_clauses, full_corpus)
     risk_acc  = _risk_score_accuracy(agent_findings, gt_clauses, full_corpus)
 
-    total = round(w_f1 * f1 + w_cat * cat_acc + w_risk * risk_acc, 4)
+    total = w_f1 * f1 + w_cat * cat_acc + w_risk * risk_acc
+    # Clamp to strictly within (0, 1) to satisfy validator requirements
+    total = max(0.01, min(0.99, total))
+    total = round(total, 4)
 
     breakdown = {
         "f1":                 round(f1, 4),

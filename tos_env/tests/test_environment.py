@@ -26,29 +26,29 @@ from server.tos_environment import TosEnvironment
 class TestTask1Grader:
     def test_correct_risky(self):
         score, _ = grade_task1_binary_risk("risky", True)
-        assert score == 1.0
+        assert score == 0.95
 
     def test_correct_safe(self):
         score, _ = grade_task1_binary_risk("safe", False)
-        assert score == 1.0
+        assert score == 0.95
 
     def test_wrong_verdict(self):
         score, _ = grade_task1_binary_risk("risky", False)
-        assert score == 0.0
+        assert score == 0.05
 
     def test_none_verdict(self):
         score, _ = grade_task1_binary_risk(None, True)
-        assert score == 0.0
+        assert score == 0.05
 
     def test_invalid_verdict(self):
         score, _ = grade_task1_binary_risk("unknown", True)
-        assert score == 0.0
+        assert score == 0.05
 
     def test_score_in_range(self):
         for verdict in ("risky", "safe"):
             for truth in (True, False):
                 score, _ = grade_task1_binary_risk(verdict, truth)
-                assert 0.0 <= score <= 1.0
+                assert 0.0 < score < 1.0
 
 
 class TestTask2Grader:
@@ -62,7 +62,7 @@ class TestTask2Grader:
 
     def test_wrong_category(self):
         score, _, _ = grade_task2_category("Payments", None, "Privacy")
-        assert score == 0.0
+        assert 0.0 < score < 1.0
 
     def test_reasoning_bonus(self):
         score_no_reason, _, _ = grade_task2_category("Privacy", None, "Privacy")
@@ -79,11 +79,11 @@ class TestTask2Grader:
             "This collects personal data privacy information share collect biometric",
             "Privacy"
         )
-        assert score <= 1.0
+        assert 0.0 < score < 1.0
 
     def test_none_category(self):
         score, _, _ = grade_task2_category(None, None, "Privacy")
-        assert score == 0.0
+        assert score == 0.01
 
 
 class TestTask3Grader:
@@ -108,12 +108,12 @@ class TestTask3Grader:
     def test_empty_findings(self):
         gt = self._gt()
         score, _, _ = grade_task3_full_audit([], gt, CLAUSE_BY_ID)
-        assert score == 0.0
+        assert score == 0.05
 
     def test_none_findings(self):
         gt = self._gt()
         score, _, _ = grade_task3_full_audit(None, gt, CLAUSE_BY_ID)
-        assert score == 0.0
+        assert score == 0.05
 
     def test_partial_findings(self):
         gt = self._gt()
